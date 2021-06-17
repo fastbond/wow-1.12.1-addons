@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: ConsumeBar
+## Author: Fastbond
+## Notes: Addon to manage consumables
+## SavedVariablesPerCharacter: SavedConsumes, SavedItemInfo, Settings
+ConsumeBar.lua
+ConsumeBar.xml
+

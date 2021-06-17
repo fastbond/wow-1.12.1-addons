@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: ItemScripts
+## Author: Fastbond
+## Notes: Utility functions related to item usage
+ItemScripts.lua
+ItemScripts.xml
+
+

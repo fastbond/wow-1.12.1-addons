@@ -1,0 +1,14 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+
+	<Frame name="FFLoadFrame" hidden="true"> 
+		<Scripts>
+			<OnLoad>
+				FF.OnLoad();
+			</OnLoad>
+			<OnEvent>
+				FF.OnEvent();
+			</OnEvent>
+		</Scripts>
+	</Frame>
+
+</Ui>

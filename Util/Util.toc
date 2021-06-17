@@ -1,0 +1,6 @@
+## Interface: 11200
+## Title: Util
+## Notes: Basic utility functions
+## Author: fastbond
+
+Util.lua

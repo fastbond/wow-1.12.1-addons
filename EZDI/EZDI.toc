@@ -1,0 +1,9 @@
+## Interface: 11200
+## Title: EZDI
+## Author: Fastbond
+## Notes: 
+## SavedVariables: EZDIWhitelist
+EZDI.lua
+EZDI.xml
+Items.lua
+

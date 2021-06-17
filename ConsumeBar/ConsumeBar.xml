@@ -1,0 +1,32 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+
+	<Frame name="ConsumeBarTextTemplate" enableMouse="false" virtual="true">
+		<Size>
+			<AbsDimension x="36" y="12"/>
+		</Size>
+		<Anchors>
+			<Anchor point="BOTTOMRIGHT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString name="$parentTime" inherits="NumberFontNormal" justifyH="CENTER"/>
+			</Layer>
+		</Layers>
+	</Frame>
+
+
+	<Frame name="ConsumeBarLoadFrame" hidden="true"> <!-- parent="UIParent" toplevel="true" frameStrata="MEDIUM" enableMouse="true" movable="true"-->
+		<Scripts>
+			<OnLoad>
+				ConsumeBar.OnLoad();
+			</OnLoad>
+			<OnEvent>
+				ConsumeBar.OnEvent();
+			</OnEvent>
+			<OnShow>
+				ConsumeBar.OnShow();
+			</OnShow>
+		</Scripts>
+	</Frame>
+
+</Ui>

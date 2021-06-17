@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: TargetPercent
+## Author: Fastbond
+## Notes: Adds a percent indicator to default target frame
+TargetPercent.lua
+
+
+

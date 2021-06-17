@@ -1,0 +1,62 @@
+<Bindings>
+	<Binding name="Consume Bar 1" description="Use Consume Bar 1" header="CONSUMEBAR">
+		ConsumeBar.UseItem(1)
+	</Binding>
+	<Binding name="Consume Bar 2" description="Use Consume Bar 2">
+		ConsumeBar.UseItem(2)
+	</Binding>
+	<Binding name="Consume Bar 3" description="Use Consume Bar 3">
+		ConsumeBar.UseItem(3)
+	</Binding>
+	<Binding name="Consume Bar 4" description="Use Consume Bar 4">
+		ConsumeBar.UseItem(4)
+	</Binding>
+	<Binding name="Consume Bar 5" description="Use Consume Bar 5">
+		ConsumeBar.UseItem(5)
+	</Binding>
+	<Binding name="Consume Bar 6" description="Use Consume Bar 6">
+		ConsumeBar.UseItem(6)
+	</Binding>
+	<Binding name="Consume Bar 7" description="Use Consume Bar 7">
+		ConsumeBar.UseItem(7)
+	</Binding>
+	<Binding name="Consume Bar 8" description="Use Consume Bar 8">
+		ConsumeBar.UseItem(8)
+	</Binding>
+	<Binding name="Consume Bar 9" description="Use Consume Bar 9">
+		ConsumeBar.UseItem(9)
+	</Binding>
+	<Binding name="Consume Bar 10" description="Use Consume Bar 10">
+		ConsumeBar.UseItem(10)
+	</Binding>
+	<Binding name="Consume Bar 11" description="Use Consume Bar 11">
+		ConsumeBar.UseItem(11)
+	</Binding>
+	<Binding name="Consume Bar 12" description="Use Consume Bar 12">
+		ConsumeBar.UseItem(12)
+	</Binding>
+	<Binding name="Consume Bar 13" description="Use Consume Bar 13">
+		ConsumeBar.UseItem(13)
+	</Binding>
+	<Binding name="Consume Bar 14" description="Use Consume Bar 14">
+		ConsumeBar.UseItem(14)
+	</Binding>
+	<Binding name="Consume Bar 15" description="Use Consume Bar 15">
+		ConsumeBar.UseItem(15)
+	</Binding>
+	<Binding name="Consume Bar 16" description="Use Consume Bar 16">
+		ConsumeBar.UseItem(16)
+	</Binding>	
+	<Binding name="Consume Bar 17" description="Use Consume Bar 17">
+		ConsumeBar.UseItem(17)
+	</Binding>
+	<Binding name="Consume Bar 18" description="Use Consume Bar 18">
+		ConsumeBar.UseItem(18)
+	</Binding>
+	<Binding name="Consume Bar 19" description="Use Consume Bar 19">
+		ConsumeBar.UseItem(19)
+	</Binding>
+	<Binding name="Consume Bar 20" description="Use Consume Bar 20">
+		ConsumeBar.UseItem(20)
+	</Binding>
+</Bindings>

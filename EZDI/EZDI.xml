@@ -1,0 +1,14 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+
+	<Frame name="EZDILoadFrame" hidden="false"> 
+		<Scripts>
+			<OnLoad>
+				EZDI.OnLoad();
+			</OnLoad>
+			<OnEvent>
+				EZDI.OnEvent();
+			</OnEvent>
+		</Scripts>
+	</Frame>
+
+</Ui>

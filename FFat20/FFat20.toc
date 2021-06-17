@@ -1,0 +1,9 @@
+## Interface: 11200
+## Title: FFat20
+## Author: Fastbond
+## Notes: Just cast FF it's not that hard
+## SavedVariables: FF_Settings
+FFat20.lua
+FFat20.xml
+
+
