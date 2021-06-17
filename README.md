@@ -1,4 +1,4 @@
-# WoW 1.12.1 Addons
+# World of Warcraft 1.12.1 Addons
 A collection of addons for the World of Warcraft 1.12.1 client and game.  These addons were mostly written by request or for personal use, and are therefore lacking polish and features.  
 
 With the release of WoW Classic, the 1.12.1 client has fallen out of popularity and there is little motivation to continue adding functionality.  However, if there is a need for a fix or improvement contact me and I may look into it.
