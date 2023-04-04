@@ -175,8 +175,8 @@ manatick:SetScript("OnUpdate", function()
     
     --Only apply this if full mana?
     --if UnitMana("player") / UnitManaMax("player") >= 1 and abs(currentTime - expectedTickTime) < tickVariance then
-    if (currentTime - expectedTickTime > 0) and (currentTime - expectedTickTime < tickVariance) then
-        lastTickTime = currentTime
+    if (currentTime - expectedTickTime > 0) and (currentTime - expectedTickTime > tickVariance) then
+        lastTickTime = currentTime - tickVariance
         expectedTickTime = expectedTickTime + expectedTickInterval
         isGuess = true
     end
