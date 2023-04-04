@@ -81,11 +81,9 @@ manatickBar.text:SetShadowColor(0,0,0)
 manatickBar.text:SetShadowOffset(1, -1)
 
 manatickBar.latency = manatickBar:CreateTexture(nil, 'OVERLAY')
-manatickBar.latency:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
---manatickBar.latency:SetColorTexture(255/255, 125/255, 255/255, 1.0)
-manatickBar.latency:SetHeight(manabar_height * 1.8)
-manatickBar.latency:SetWidth(20)
-manatickBar.latency:SetBlendMode('ADD')
+manatickBar.latency:SetTexture(1, 1, 1, 0.8)
+manatickBar.latency:SetHeight(manabar_height * 0.8)
+manatickBar.latency:SetWidth(1)
 
 manatickBar:Show()
 
@@ -104,6 +102,7 @@ manatick:RegisterEvent("UNIT_MANA")
 --Latency causing delays
 --Tick while casting
 --Possible it just pauses current 2s timer, rather than doing on next?
+--Need to also do zone, reload, etc events besides enter world
 manatick:SetScript("OnEvent", function()
     if event == "PLAYER_ENTERING_WORLD" then
         --this.lastTickMana = UnitMana("player")
@@ -204,7 +203,6 @@ manatick:SetScript("OnUpdate", function()
     manatickBar.latency:SetPoint("Center", manatickBar, "LEFT", xpos, 0)
     manatickBar.latency:Show()
    
-
 end)
 
 
