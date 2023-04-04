@@ -8,7 +8,7 @@ end
 
 ManaTick = {}
 local defaultInterval = 2.0
-local longTickInterval = 5
+local lockoutDuration = 5
 local tickVariance = 0.02
 local lastTickTime = 0
 local lastTickMana = 0
@@ -51,14 +51,7 @@ manatickBar:SetScript("OnDragStop",
 manatickBar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = "Interface/Tooltips/UI-Tooltip-Border", edgeSize = 10, insets = { left = 1, right = 1, top = 1, bottom = 1, },})
 manatickBar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
 manatickBar:SetBackdropColor(24/255, 24/255, 24/255, .7)
-
---manatickBar:SetStatusBarTexture("Interface\\Addons\\ManaTick\\BantoBar.tga")
---manatickBar:SetStatusBarColor(255/255, 125/255, 255/255, 1.0)
-
---[[manatickBar.bg = manatickBar:CreateTexture(nil, "BACKGROUND")
-manatickBar.bg:SetTexture("Interface\\Addons\\ManaTick\\BantoBar.tga")
-manatickBar.bg:SetAllPoints(true)
-manatickBar.bg:SetVertexColor(0, 0, 0, .5)]]
+--manatickBar.bg:SetVertexColor(0, 0, 0, .5)
 
 manatickBar.border = nil
 
@@ -86,6 +79,13 @@ manatickBar.text:SetText("")
 --REMOVE OUTLINE
 manatickBar.text:SetShadowColor(0,0,0)
 manatickBar.text:SetShadowOffset(1, -1)
+
+manatickBar.latency = manatickBar:CreateTexture(nil, 'OVERLAY')
+manatickBar.latency:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+--manatickBar.latency:SetColorTexture(255/255, 125/255, 255/255, 1.0)
+manatickBar.latency:SetHeight(manabar_height * 1.8)
+manatickBar.latency:SetWidth(20)
+manatickBar.latency:SetBlendMode('ADD')
 
 manatickBar:Show()
 
@@ -127,23 +127,23 @@ manatick:SetScript("OnEvent", function()
         --      -Others?
         if manaDiff < 0 then
             --[[
-            expectedTickInterval = longTickInterval
-            --Find next interval of defaultInterval after t+longTickInterval
+            expectedTickInterval = lockoutDuration
+            --Find next interval of defaultInterval after t+lockoutDuration
             --THIS IS A BAD WAY TO DO IT BUT IM SO TIRED
             --THIS NEEDS A FLOAT MARGIN CHECK
-            while expectedTickTime < t + longTickInterval do
+            while expectedTickTime < t + lockoutDuration do
                 expectedTickTime = expectedTickTime + defaultInterval
             end
             return
             ]]
-            regenDisabledTime = t + longTickInterval
+            regenDisabledTime = t + lockoutDuration
             setTickBarColor(false)
         end
         
         local timeDiff = t - lastTickTime
         --CHANGE THIS TO IF NOT SET, START SCHEDULING TICKS
         if isGuess or (timeDiff > defaultInterval - tickVariance) then
-            print("Time since last change: " .. t - lastTickTime)
+            --print("Time since last change: " .. t - lastTickTime)
             lastTickTime = t    
             expectedTickInterval = defaultInterval
             expectedTickTime = t + expectedTickInterval
@@ -187,13 +187,23 @@ manatick:SetScript("OnUpdate", function()
     if pct > 1 then
         pct = 1
     end
-    --finish = expectedTickInterval
-    finish = expectedTickTime - lastTickTime
-    manatickBar:SetMinMaxValues(0,finish)
-    manatickBar:SetValue(pct * finish)
-    --manatickBar.text:SetText(finish .. "s")
+    if pct < 0 then
+        pct = 0
+    end
+    --duration = expectedTickInterval
+    duration = expectedTickTime - lastTickTime
+    manatickBar:SetMinMaxValues(0,duration)
+    manatickBar:SetValue(pct * duration)
+    --manatickBar.text:SetText(duration .. "s")
     xpos = pct * manatickBar:GetWidth()
     manatickBar.spark:SetPoint("CENTER", manatickBar, "LEFT", xpos, 0)
+    
+    _, _, latencyHome, latencyWorld = GetNetStats()  --latencyWorld doesn't seem to exist?
+    drinkPct = (duration - (latencyHome/1000)) / duration
+    xpos = drinkPct * manatickBar:GetWidth()
+    manatickBar.latency:SetPoint("Center", manatickBar, "LEFT", xpos, 0)
+    manatickBar.latency:Show()
+   
 
 end)
 
