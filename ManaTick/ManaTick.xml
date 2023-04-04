@@ -1,0 +1,12 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Frame name="ManaTickLoadFrame" hidden="true"> 
+		<Scripts>
+			<OnLoad>
+				<!--ManaTick:OnLoad();-->
+			</OnLoad>
+			<OnEvent>
+				<!--ManaTick:OnEvent();-->
+			</OnEvent>
+		</Scripts>
+	</Frame>
+</Ui>

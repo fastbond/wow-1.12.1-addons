@@ -1,0 +1,9 @@
+## Interface: 11200
+## Title: ManaTick
+## Author: Fastbond
+## Notes: 
+## SavedVariables: 
+ManaTick.lua
+ManaTick.xml
+
+
