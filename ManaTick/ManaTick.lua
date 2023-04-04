@@ -8,14 +8,14 @@ end
 
 ManaTick = {}
 local defaultInterval = 2.0
---There might be a hidden set tick on 2s that it waits to line up with
-local gcd = 1.5
-local longTickInterval = 5 + gcd
+local longTickInterval = 5
 local tickVariance = 0.02
 local lastTickTime = 0
 local lastTickMana = 0
-local nextExpectedTickInterval = defaultInterval
-local nextExpectedTick = GetTime() + defaultInterval
+local expectedTickInterval = defaultInterval
+local expectedTickTime = GetTime() + expectedTickInterval
+local regenDisabledTime = nil
+local isGuess = nil
 local latency = nil
 local tickInterval = nil
 
@@ -24,8 +24,8 @@ local tickInterval = nil
 local manatickBar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
 
 --Set Size
-manatickBar:SetWidth(200)
-manatickBar:SetHeight(20)
+manatickBar:SetWidth(150)
+manatickBar:SetHeight(25)
 
 --Set position relative to base UI(frame anchor corner, target, target anchor corner, xoffset, yoffset)
 manatickBar:ClearAllPoints()
@@ -49,8 +49,8 @@ manatickBar:SetScript("OnDragStop",
 --Background Texture
 --manatickBar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16})
 manatickBar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = "Interface/Tooltips/UI-Tooltip-Border", edgeSize = 10, insets = { left = 1, right = 1, top = 1, bottom = 1, },})
-manatickBar:SetBackdropBorderColor(0.0, 0.0, 0.0, .6)
-manatickBar:SetBackdropColor(24/255, 24/255, 24/255, .5)
+manatickBar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
+manatickBar:SetBackdropColor(24/255, 24/255, 24/255, .7)
 
 --manatickBar:SetStatusBarTexture("Interface\\Addons\\ManaTick\\BantoBar.tga")
 --manatickBar:SetStatusBarColor(255/255, 125/255, 255/255, 1.0)
@@ -101,14 +101,17 @@ manatick:RegisterEvent("UNIT_MANA")
 --Any mp5 gear will cause it to tick every 2s regardless
 --Blessing of wisdom/buff ticks?
 --Mana pots, runes, consumes?
+--Latency causing delays
 --Tick while casting
+--Possible it just pauses current 2s timer, rather than doing on next?
 manatick:SetScript("OnEvent", function()
     if event == "PLAYER_ENTERING_WORLD" then
         --this.lastTickMana = UnitMana("player")
         --this.lastTickTime = GetTime()
         lastTickMana = UnitMana("player")
         lastTickTime = GetTime()
-        nextExpectedTickInterval = defaultInterval
+        expectedTickInterval = defaultInterval
+        isGuess = true
     end
     
     if event == "UNIT_MANA" and arg1 == "player" then
@@ -123,16 +126,28 @@ manatick:SetScript("OnEvent", function()
         --      -Mana burn effects
         --      -Others?
         if manaDiff < 0 then
-            lastTickTime = t
-            nextExpectedTickInterval = longTickInterval
+            --[[
+            expectedTickInterval = longTickInterval
+            --Find next interval of defaultInterval after t+longTickInterval
+            --THIS IS A BAD WAY TO DO IT BUT IM SO TIRED
+            --THIS NEEDS A FLOAT MARGIN CHECK
+            while expectedTickTime < t + longTickInterval do
+                expectedTickTime = expectedTickTime + defaultInterval
+            end
             return
+            ]]
+            regenDisabledTime = t + longTickInterval
+            setTickBarColor(false)
         end
         
         local timeDiff = t - lastTickTime
-        if timeDiff > defaultInterval - tickVariance then
+        --CHANGE THIS TO IF NOT SET, START SCHEDULING TICKS
+        if isGuess or (timeDiff > defaultInterval - tickVariance) then
             print("Time since last change: " .. t - lastTickTime)
             lastTickTime = t    
-            nextExpectedTickInterval = defaultInterval
+            expectedTickInterval = defaultInterval
+            expectedTickTime = t + expectedTickInterval
+            isGuess = false
         end
         
     end
@@ -140,19 +155,43 @@ end)
 
 
 
+function setTickBarColor(regenEnabled)
+    if regenEnabled then
+        manatickBar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
+        manatickBar:SetBackdropColor(24/255, 24/255, 24/255, .7)
+    else
+        manatickBar:SetBackdropBorderColor(0.2, 0.0, 0.0, .85)
+        manatickBar:SetBackdropColor(75/255, 24/255, 24/255, .7)
+    end
+end
+
+
 manatick:SetScript("OnUpdate", function()
-    --Attachment point on this object, parent frame, attachment point on parent frame, xoffset, yoffset
-    currentTime = GetTime() - lastTickTime
-    pct = currentTime / nextExpectedTickInterval
+    currentTime = GetTime()
+    
+    if regenDisabledTime ~= nil and regenDisabledTime < currentTime then
+        setTickBarColor(true)
+        regenDisabledTime = nil
+    end
+    
+    --Only apply this if full mana?
+    --if UnitMana("player") / UnitManaMax("player") >= 1 and abs(currentTime - expectedTickTime) < tickVariance then
+    if (currentTime - expectedTickTime > 0) and (currentTime - expectedTickTime < tickVariance) then
+        lastTickTime = currentTime
+        expectedTickTime = expectedTickTime + expectedTickInterval
+        isGuess = true
+    end
+    
+    --pct = (currentTime - lastTickTime) / expectedTickInterval
+    pct = (currentTime - lastTickTime) / (expectedTickTime - lastTickTime)
     if pct > 1 then
         pct = 1
     end
-    if UnitMana("player") == UnitManaMax("player") then
-        pct = 0
-    end
-    manatickBar:SetMinMaxValues(0,nextExpectedTickInterval)
-    manatickBar:SetValue(pct * nextExpectedTickInterval)
-    manatickBar.text:SetText(nextExpectedTickInterval .. "s")
+    --finish = expectedTickInterval
+    finish = expectedTickTime - lastTickTime
+    manatickBar:SetMinMaxValues(0,finish)
+    manatickBar:SetValue(pct * finish)
+    --manatickBar.text:SetText(finish .. "s")
     xpos = pct * manatickBar:GetWidth()
     manatickBar.spark:SetPoint("CENTER", manatickBar, "LEFT", xpos, 0)
 
