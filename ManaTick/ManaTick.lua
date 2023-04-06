@@ -59,9 +59,9 @@ SlashCmdList["MANATICK"] = function(msg)
     end
     
     if cmd == "width" then
-        ManaTick:SetWidth(text)
+        ManaTick:SetWidth(tonumber(text))
     elseif cmd == "height" then
-        ManaTick:SetHeight(text)
+        ManaTick:SetHeight(tonumber(text))
     end
     
     if cmd == "latency" then
@@ -239,12 +239,18 @@ end
 
 
 function ManaTick:SetWidth(width)
+    if type(width) ~= "number" then
+        return
+    end
     ManaTick_Settings.width = width
     ManaTick.bar:SetWidth(ManaTick_Settings.width)
 end
 
 
 function ManaTick:SetHeight(height)
+    if type(height) ~= "number" then
+        return
+    end
     ManaTick_Settings.height = height
     ManaTick.bar:SetHeight(ManaTick_Settings.height)
     ManaTick.bar.spark:SetHeight(ManaTick.bar:GetHeight() * 1.8)
@@ -286,6 +292,9 @@ end
 
 
 function ManaTick:SetPosition(x, y)
+    if type(x) ~= "number" or type(y) ~= "number" then
+        return
+    end
     ManaTick.bar:ClearAllPoints()
     ManaTick.bar:SetPoint("CENTER", UIParent, "CENTER", x, y)
 end
