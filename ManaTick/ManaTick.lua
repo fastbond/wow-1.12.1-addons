@@ -1,9 +1,6 @@
-
-
 function print(str)
 	DEFAULT_CHAT_FRAME:AddMessage(str)	
 end
-
 
 
 ManaTick = {}
@@ -20,74 +17,171 @@ local latency = nil
 local tickInterval = nil
 
 
+local default_settings = {
+	["width"] = 150,
+	["height"] = 25,
+    ["spark_width"] = 20,
+	["show"] = true,
+	["lock"] = true,
+	--["color"] = 1.0,
+}
+local settings = default_settings
+
+
+SLASH_MANATICK1, SLASH_MANATICK2 = '/manatick', '/mt'; 
+SlashCmdList["MANATICK"] = function(msg)
+	local msg = string.lower(msg)
+	local _,_,cmd, text = string.find(msg,"([^%s]+) ?(.*)")
+	
+	if cmd == "show" then
+		ManaTick.bar:Show()
+	elseif cmd == "hide" then
+		ManaTick.bar:Hide()
+	end
     
-local manatickBar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
+    if cmd == "lock" then
+        ManaTick.bar:EnableMouse(false)
+    elseif cmd == "unlock" then
+        ManaTick.bar:EnableMouse(true)
+    end
+    
+    if cmd == "width" then
+        ManaTick:SetWidth(text)
+    elseif cmd == "height" then
+        ManaTick:SetHeight(text)
+    end
+	
+end
 
---Set Size
-manatickBar:SetWidth(150)
-manatickBar:SetHeight(25)
 
---Set position relative to base UI(frame anchor corner, target, target anchor corner, xoffset, yoffset)
-manatickBar:ClearAllPoints()
-manatickBar:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+--Need to make sure they exist
+function ManaTick:Load()
+    ManaTick:CreateBar()
+    
+	if settings.show then
+		ManaTick:Show(true)
+	else
+		ManaTick:Show(false)
+	end
 
---Misc
-manatickBar:SetFrameStrata("BACKGROUND") --Make sure it's under the bars
-manatickBar:SetFrameLevel(1)
-manatickBar:SetClampedToScreen(true)
+    if settings.lock then
+        ManaTick:Lock(false)
+    else
+        ManaTick:Lock(true)
+    end
+    
+    --Need to check for non-numeric
+    if settings.width ~= nil then
+        ManaTick:SetWidth(settings.width)
+    end
+    if settings.height ~= nil then
+        ManaTick:SetHeight(settings.height)
+    end
+end
 
---Movement
-manatickBar:EnableMouse(true)
-manatickBar:RegisterForDrag("LeftButton")
-manatickBar:SetMovable(true)
-manatickBar:SetScript("OnDragStart", function() this:StartMoving() end)
-manatickBar:SetScript("OnDragStop", 
-    function()  
-        this:StopMovingOrSizing();
-    end)
 
---Background Texture
---manatickBar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16})
-manatickBar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = "Interface/Tooltips/UI-Tooltip-Border", edgeSize = 10, insets = { left = 1, right = 1, top = 1, bottom = 1, },})
-manatickBar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
-manatickBar:SetBackdropColor(24/255, 24/255, 24/255, .7)
---manatickBar.bg:SetVertexColor(0, 0, 0, .5)
+function ManaTick:SetWidth(width)
+    settings.width = width
+    ManaTick.bar:SetWidth(settings.width)
+end
 
-manatickBar.border = nil
 
-manatickBar.spark = manatickBar:CreateTexture(nil, 'OVERLAY')
-manatickBar.spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
---manatickBar.spark:SetColorTexture(255/255, 125/255, 255/255, 1.0)
-local manabar_height = manatickBar:GetHeight()--manabarFrame:GetHeight()
-local manabar_width = manatickBar:GetWidth()--manabarFrame:GetWidth()
-manatickBar.spark:SetHeight(manabar_height * 1.8)
-manatickBar.spark:SetWidth(20)
-manatickBar.spark:SetBlendMode('ADD')
+function ManaTick:SetHeight(height)
+    settings.height = height
+    ManaTick.bar:SetHeight(settings.height)
+end
 
---Default Values
-manatickBar:SetMinMaxValues(0,defaultInterval)
-manatickBar:SetValue(0)
 
---Text
-manatickBar.text = manatickBar:CreateFontString("manatickBarText", "OVERLAY")
-manatickBar.text:ClearAllPoints()
-manatickBar.text:SetPoint("LEFT", manatickBar, "RIGHT", 0, 0)
-manatickBar.text:SetTextColor(1, 1, 1, 1)
-manatickBar.text:SetJustifyH("LEFT")
-manatickBar.text:SetFont("Fonts\\FRIZQT__.TTF", 10)
-manatickBar.text:SetText("")
---REMOVE OUTLINE
-manatickBar.text:SetShadowColor(0,0,0)
-manatickBar.text:SetShadowOffset(1, -1)
+function ManaTick:Show(show)
+    if show then
+        settings.show = true
+        ManaTick.bar:Show()
+    else
+        settings.show = false
+        ManaTick.bar:Hide()
+    end
+end
 
-manatickBar.latency = manatickBar:CreateTexture(nil, 'OVERLAY')
-manatickBar.latency:SetTexture(1, 1, 1, 0.8)
-manatickBar.latency:SetHeight(manabar_height * 0.8)
-manatickBar.latency:SetWidth(1)
 
-manatickBar:Show()
+function ManaTick:Lock(lock)
+    if lock then
+        settings.lock = true
+        ManaTick.bar:EnableMouse(false)
+    else
+        settings.lock = false
+        ManaTick.bar:EnableMouse(true)
+    end
+end
 
---end
+function ManaTick:CreateBar()
+    ManaTick.bar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
+
+    --Set Size
+    ManaTick.bar:SetWidth(settings.width)
+    ManaTick.bar:SetHeight(settings.height)
+
+    --Set position relative to base UI(frame anchor corner, target, target anchor corner, xoffset, yoffset)
+    ManaTick.bar:ClearAllPoints()
+    ManaTick.bar:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+
+    --Misc
+    ManaTick.bar:SetFrameStrata("BACKGROUND") --Make sure it's under the bars
+    ManaTick.bar:SetFrameLevel(1)
+    ManaTick.bar:SetClampedToScreen(true)
+
+    --Movement
+    ManaTick.bar:EnableMouse(true)
+    ManaTick.bar:RegisterForDrag("LeftButton")
+    ManaTick.bar:SetMovable(true)
+    ManaTick.bar:SetScript("OnDragStart", function() this:StartMoving() end)
+    ManaTick.bar:SetScript("OnDragStop", 
+        function()  
+            this:StopMovingOrSizing();
+        end)
+
+    --Background Texture
+    --ManaTick.bar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16})
+    ManaTick.bar:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = "Interface/Tooltips/UI-Tooltip-Border", edgeSize = 10, insets = { left = 1, right = 1, top = 1, bottom = 1, },})
+    ManaTick.bar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
+    ManaTick.bar:SetBackdropColor(24/255, 24/255, 24/255, .7)
+    --ManaTick.bar.bg:SetVertexColor(0, 0, 0, .5)
+
+    ManaTick.bar.border = nil
+
+    ManaTick.bar.spark = ManaTick.bar:CreateTexture(nil, 'OVERLAY')
+    ManaTick.bar.spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+    --ManaTick.bar.spark:SetColorTexture(255/255, 125/255, 255/255, 1.0)
+    local manabar_height = ManaTick.bar:GetHeight()
+    local manabar_width = ManaTick.bar:GetWidth()
+    ManaTick.bar.spark:SetHeight(manabar_height * 1.8)
+    ManaTick.bar.spark:SetWidth(settings.spark_width)
+    ManaTick.bar.spark:SetBlendMode('ADD')
+
+    --Default Values
+    ManaTick.bar:SetMinMaxValues(0,defaultInterval)
+    ManaTick.bar:SetValue(0)
+
+    --Text
+    ManaTick.bar.text = ManaTick.bar:CreateFontString("ManaTick.barText", "OVERLAY")
+    ManaTick.bar.text:ClearAllPoints()
+    ManaTick.bar.text:SetPoint("LEFT", ManaTick.bar, "RIGHT", 0, 0)
+    ManaTick.bar.text:SetTextColor(1, 1, 1, 1)
+    ManaTick.bar.text:SetJustifyH("LEFT")
+    ManaTick.bar.text:SetFont("Fonts\\FRIZQT__.TTF", 10)
+    ManaTick.bar.text:SetText("")
+    --REMOVE OUTLINE
+    ManaTick.bar.text:SetShadowColor(0,0,0)
+    ManaTick.bar.text:SetShadowOffset(1, -1)
+
+    ManaTick.bar.latency = ManaTick.bar:CreateTexture(nil, 'OVERLAY')
+    ManaTick.bar.latency:SetTexture(1, 1, 1, 0.8)
+    ManaTick.bar.latency:SetHeight(manabar_height * 0.8)
+    ManaTick.bar.latency:SetWidth(1)
+
+    ManaTick.bar:Show()
+end
+    
+
 
 
 
@@ -95,6 +189,7 @@ manatickBar:Show()
 local manatick = CreateFrame("Frame", nil, UIParent)
 manatick:RegisterEvent("PLAYER_ENTERING_WORLD")
 manatick:RegisterEvent("UNIT_MANA")
+manatick:RegisterEvent("ADDON_LOADED")
 --Can't just assume next tick is 5s after spell cast due to set bonus, talents, trinkets
 --Any mp5 gear will cause it to tick every 2s regardless
 --Blessing of wisdom/buff ticks?
@@ -104,6 +199,11 @@ manatick:RegisterEvent("UNIT_MANA")
 --Possible it just pauses current 2s timer, rather than doing on next?
 --Need to also do zone, reload, etc events besides enter world
 manatick:SetScript("OnEvent", function()
+    if event == "ADDON_LOADED" then
+        --set settings here
+        --ManaTick.AddonLoaded()
+    end
+
     if event == "PLAYER_ENTERING_WORLD" then
         --this.lastTickMana = UnitMana("player")
         --this.lastTickTime = GetTime()
@@ -154,13 +254,21 @@ end)
 
 
 
+function ManaTick:OnLoad()
+
+
+
+end
+
+
+
 function setTickBarColor(regenEnabled)
     if regenEnabled then
-        manatickBar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
-        manatickBar:SetBackdropColor(24/255, 24/255, 24/255, .7)
+        ManaTick.bar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
+        ManaTick.bar:SetBackdropColor(24/255, 24/255, 24/255, .7)
     else
-        manatickBar:SetBackdropBorderColor(0.2, 0.0, 0.0, .85)
-        manatickBar:SetBackdropColor(75/255, 24/255, 24/255, .7)
+        ManaTick.bar:SetBackdropBorderColor(0.2, 0.0, 0.0, .85)
+        ManaTick.bar:SetBackdropColor(75/255, 24/255, 24/255, .7)
     end
 end
 
@@ -191,19 +299,22 @@ manatick:SetScript("OnUpdate", function()
     end
     --duration = expectedTickInterval
     duration = expectedTickTime - lastTickTime
-    manatickBar:SetMinMaxValues(0,duration)
-    manatickBar:SetValue(pct * duration)
-    --manatickBar.text:SetText(duration .. "s")
-    xpos = pct * manatickBar:GetWidth()
-    manatickBar.spark:SetPoint("CENTER", manatickBar, "LEFT", xpos, 0)
+    ManaTick.bar:SetMinMaxValues(0,duration)
+    ManaTick.bar:SetValue(pct * duration)
+    --ManaTick.bar.text:SetText(duration .. "s")
+    xpos = pct * ManaTick.bar:GetWidth()
+    ManaTick.bar.spark:SetPoint("CENTER", ManaTick.bar, "LEFT", xpos, 0)
     
     _, _, latencyHome, latencyWorld = GetNetStats()  --latencyWorld doesn't seem to exist?
     drinkPct = (duration - (latencyHome/1000)) / duration
-    xpos = drinkPct * manatickBar:GetWidth()
-    manatickBar.latency:SetPoint("Center", manatickBar, "LEFT", xpos, 0)
-    manatickBar.latency:Show()
+    xpos = drinkPct * ManaTick.bar:GetWidth()
+    ManaTick.bar.latency:SetPoint("Center", ManaTick.bar, "LEFT", xpos, 0)
+    ManaTick.bar.latency:Show()
    
 end)
+
+
+
 
 
 

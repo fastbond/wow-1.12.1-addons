@@ -1,8 +1,8 @@
 ## Interface: 11200
 ## Title: ManaTick
 ## Author: Fastbond
-## Notes: 
-## SavedVariables: 
+## Notes: Tracks mana regen ticks for drink walking etc
+## SavedVariables: ManaTick.settings
 ManaTick.lua
 ManaTick.xml
 

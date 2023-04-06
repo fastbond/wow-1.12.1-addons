@@ -2,11 +2,8 @@
 	<Frame name="ManaTickLoadFrame" hidden="true"> 
 		<Scripts>
 			<OnLoad>
-				<!--ManaTick:OnLoad();-->
+				ManaTick:Load();
 			</OnLoad>
-			<OnEvent>
-				<!--ManaTick:OnEvent();-->
-			</OnEvent>
 		</Scripts>
 	</Frame>
 </Ui>
