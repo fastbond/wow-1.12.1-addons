@@ -33,6 +33,18 @@ SLASH_MANATICK1, SLASH_MANATICK2 = '/manatick', '/mt';
 SlashCmdList["MANATICK"] = function(msg)
 	local msg = string.lower(msg)
 	local _,_,cmd, text = string.find(msg,"([^%s]+) ?(.*)")
+    
+    if cmd == "help" or cmd == "" or cmd == nil then
+        DEFAULT_CHAT_FRAME:AddMessage("ManaTick commands: ")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt show - Show bar")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt hide - Hide bar")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt lock - Lock in place and disable mouse interaction")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt unlock - Unlock bar for movement")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt width x - Set bar width to x")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt height x - Set bar height x")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt latency - Toggle latency bar")	
+        DEFAULT_CHAT_FRAME:AddMessage(" /mt reset - reset settings to defaults")
+    end
 	
 	if cmd == "show" then
 		ManaTick.bar:Show()
