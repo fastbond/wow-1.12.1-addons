@@ -27,7 +27,12 @@ local default_settings = {
     ["y"] = 0,
 	--["color"] = 1.0,
 }
-ManaTick_Settings = default_settings
+local settings = {}
+for k, v in pairs(default_settings) do
+    settings[k] = v
+end
+ManaTick_Settings = {}
+
 
 SLASH_MANATICK1, SLASH_MANATICK2 = '/manatick', '/mt'; 
 SlashCmdList["MANATICK"] = function(msg)
@@ -70,7 +75,7 @@ SlashCmdList["MANATICK"] = function(msg)
     
     if cmd == "reset" then
         for k, v in pairs(default_settings) do
-            ManaTick_Settings[k] = v
+            settings[k] = v
         end
         ManaTick:ApplySettings()
 	end
@@ -83,6 +88,7 @@ function ManaTick:OnLoad()
     self.scripts:RegisterEvent("PLAYER_ENTERING_WORLD")
     self.scripts:RegisterEvent("UNIT_MANA")
     self.scripts:RegisterEvent("ADDON_LOADED")
+    self.scripts:RegisterEvent("PLAYER_LOGOUT")
     
     self:CreateBar()
     
@@ -109,20 +115,22 @@ end
 function ManaTick:OnEvent()
     --Runs after variables are loaded
     if event == "ADDON_LOADED" and arg1 == "ManaTick" then
-        if ManaTick_Settings == nil then
-            ManaTick_Settings = {}
-        end
-        for k, v in pairs(default_settings) do
-            if ManaTick_Settings[k] == nil then
-                ManaTick_Settings[k] = v
-            end
+        for k, v in ManaTick_Settings do
+            settings[k] = v
         end
         _, _, _, x, y = ManaTick.bar:GetPoint()
-        if ManaTick_Settings.x == nil or ManaTick_Settings.y == nil then
-            ManaTick_Settings.x = x
-            ManaTick_Settings.y = y
+        if settings.x == nil or settings.y == nil then
+            settings.x = x
+            settings.y = y
         end
         ManaTick:ApplySettings()
+    end
+    
+    if event == "PLAYER_LOGOUT" then
+        ManaTick_Settings = {}
+        for k, v in pairs(settings) do
+            ManaTick_Settings[k] = v
+        end
     end
 
     if event == "PLAYER_ENTERING_WORLD" then
@@ -205,34 +213,34 @@ end
 
 function ManaTick:ApplySettings()
     --Need to make sure they exist
-	if ManaTick_Settings.show then
+	if settings.show then
 		self:Show(true)
 	else
 		self:Show(false)
 	end
 
-    if ManaTick_Settings.lock then
+    if settings.lock then
         self:Lock(true)
     else
         self:Lock(false)
     end
     
     --Need to check for non-numeric
-    if ManaTick_Settings.width ~= nil then
-        self:SetWidth(ManaTick_Settings.width)
+    if settings.width ~= nil then
+        self:SetWidth(settings.width)
     end
-    if ManaTick_Settings.height ~= nil then
-        self:SetHeight(ManaTick_Settings.height)
+    if settings.height ~= nil then
+        self:SetHeight(settings.height)
     end
     
-    if ManaTick_Settings.latency then
+    if settings.latency then
 		self:ShowLatency(true)
 	else
 		self:ShowLatency(false)
 	end 
     
-    if ManaTick_Settings.x ~= nil and ManaTick_Settings.y ~= nil then
-        ManaTick:SetPosition(ManaTick_Settings.x, ManaTick_Settings.y)
+    if settings.x ~= nil and settings.y ~= nil then
+        ManaTick:SetPosition(settings.x, settings.y)
     end
 end
 
@@ -242,8 +250,8 @@ function ManaTick:SetWidth(width)
     if type(width) ~= "number" then
         return
     end
-    ManaTick_Settings.width = width
-    ManaTick.bar:SetWidth(ManaTick_Settings.width)
+    settings.width = width
+    ManaTick.bar:SetWidth(settings.width)
 end
 
 
@@ -251,8 +259,8 @@ function ManaTick:SetHeight(height)
     if type(height) ~= "number" then
         return
     end
-    ManaTick_Settings.height = height
-    ManaTick.bar:SetHeight(ManaTick_Settings.height)
+    settings.height = height
+    ManaTick.bar:SetHeight(settings.height)
     ManaTick.bar.spark:SetHeight(ManaTick.bar:GetHeight() * 1.8)
     ManaTick.bar.latency:SetHeight(max(ManaTick.bar:GetHeight() - 4, 5))
 end
@@ -260,10 +268,10 @@ end
 
 function ManaTick:Show(show)
     if show then
-        ManaTick_Settings.show = true
+        settings.show = true
         ManaTick.bar:Show()
     else
-        ManaTick_Settings.show = false
+        settings.show = false
         ManaTick.bar:Hide()
     end
 end
@@ -271,10 +279,10 @@ end
 
 function ManaTick:Lock(lock)
     if lock then
-        ManaTick_Settings.lock = true
+        settings.lock = true
         ManaTick.bar:EnableMouse(false)
     else
-        ManaTick_Settings.lock = false
+        settings.lock = false
         ManaTick.bar:EnableMouse(true)
     end
 end
@@ -282,10 +290,10 @@ end
 
 function ManaTick:ShowLatency(showLatencyBar)
     if showLatencyBar then
-        ManaTick_Settings.latency = true
+        settings.latency = true
         ManaTick.bar.latency:Show()
     else
-        ManaTick_Settings.latency = false
+        settings.latency = false
         ManaTick.bar.latency:Hide()
     end
 end
@@ -305,8 +313,8 @@ function ManaTick:CreateBar()
     bar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
 
     --Set Size
-    bar:SetWidth(ManaTick_Settings.width)
-    bar:SetHeight(ManaTick_Settings.height)
+    bar:SetWidth(settings.width)
+    bar:SetHeight(settings.height)
 
     --Set position relative to base UI(frame anchor corner, target, target anchor corner, xoffset, yoffset)
     bar:ClearAllPoints()
@@ -323,8 +331,8 @@ function ManaTick:CreateBar()
     bar:SetMovable(true)
     bar:SetScript("OnDragStart", function() this:StartMoving(); 
             _, _, _, x, y = this:GetPoint()
-            ManaTick_Settings.x = x
-            ManaTick_Settings.y = y
+            settings.x = x
+            settings.y = y
         end)
     bar:SetScript("OnDragStop", 
         function()  
@@ -343,10 +351,8 @@ function ManaTick:CreateBar()
     bar.spark = bar:CreateTexture(nil, 'OVERLAY')
     bar.spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
     --bar.spark:SetColorTexture(255/255, 125/255, 255/255, 1.0)
-    local manabar_height = bar:GetHeight()
-    local manabar_width = bar:GetWidth()
-    bar.spark:SetHeight(manabar_height * 1.8)
-    bar.spark:SetWidth(ManaTick_Settings.spark_width)
+    bar.spark:SetHeight(bar:GetHeight() * 1.8)
+    bar.spark:SetWidth(settings.spark_width)
     bar.spark:SetBlendMode('ADD')
 
     --Default Values
