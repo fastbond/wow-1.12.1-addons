@@ -105,6 +105,11 @@ function ManaTick:OnEvent()
                 ManaTick_Settings[k] = v
             end
         end
+        _, _, _, x, y = ManaTick.bar:GetPoint()
+        if ManaTick_Settings.x == nil or ManaTick_Settings.y == nil then
+            ManaTick_Settings.x = x
+            ManaTick_Settings.y = y
+        end
         ManaTick:ApplySettings()
     end
 
@@ -213,6 +218,10 @@ function ManaTick:ApplySettings()
 	else
 		self:ShowLatency(false)
 	end 
+    
+    if ManaTick_Settings.x ~= nil and ManaTick_Settings.y ~= nil then
+        ManaTick:SetPosition(ManaTick_Settings.x, ManaTick_Settings.y)
+    end
 end
 
 
@@ -264,6 +273,12 @@ function ManaTick:ShowLatency(showLatencyBar)
 end
 
 
+function ManaTick:SetPosition(x, y)
+    ManaTick.bar:ClearAllPoints()
+    ManaTick.bar:SetPoint("CENTER", UIParent, "CENTER", x, y)
+end
+
+
 
 function ManaTick:CreateBar()
     bar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
@@ -285,7 +300,11 @@ function ManaTick:CreateBar()
     bar:EnableMouse(true)
     bar:RegisterForDrag("LeftButton")
     bar:SetMovable(true)
-    bar:SetScript("OnDragStart", function() this:StartMoving() end)
+    bar:SetScript("OnDragStart", function() this:StartMoving(); 
+            _, _, _, x, y = this:GetPoint()
+            ManaTick_Settings.x = x
+            ManaTick_Settings.y = y
+        end)
     bar:SetScript("OnDragStop", 
         function()  
             this:StopMovingOrSizing();
