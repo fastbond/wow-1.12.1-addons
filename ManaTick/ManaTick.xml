@@ -2,7 +2,7 @@
 	<Frame name="ManaTickLoadFrame" hidden="true"> 
 		<Scripts>
 			<OnLoad>
-				ManaTick:Load();
+				ManaTick:OnLoad();
 			</OnLoad>
 		</Scripts>
 	</Frame>

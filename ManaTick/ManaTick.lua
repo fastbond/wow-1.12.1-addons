@@ -54,10 +54,17 @@ SlashCmdList["MANATICK"] = function(msg)
 end
 
 
---Need to make sure they exist
-function ManaTick:Load()
+
+
+function ManaTick:OnLoad()
+    ManaTick.scripts = CreateFrame("Frame", nil, UIParent)
+    ManaTick.scripts:RegisterEvent("PLAYER_ENTERING_WORLD")
+    ManaTick.scripts:RegisterEvent("UNIT_MANA")
+    ManaTick.scripts:RegisterEvent("ADDON_LOADED")
+    
     ManaTick:CreateBar()
     
+    --Need to make sure they exist
 	if settings.show then
 		ManaTick:Show(true)
 	else
@@ -77,7 +84,114 @@ function ManaTick:Load()
     if settings.height ~= nil then
         ManaTick:SetHeight(settings.height)
     end
+    
+    
+    ManaTick.scripts:SetScript("OnEvent", function()
+        ManaTick:OnEvent()
+    end)
+    
+    ManaTick.scripts:SetScript("OnUpdate", function()
+        ManaTick:OnUpdate()
+    end)
 end
+
+
+--Can't just assume next tick is 5s after spell cast due to set bonus, talents, trinkets
+--Any mp5 gear will cause it to tick every 2s regardless
+--Blessing of wisdom/buff ticks?
+--Mana pots, runes, consumes?
+--Latency causing delays
+--Tick while casting
+--Possible it just pauses current 2s timer, rather than doing on next?
+--Need to also do zone, reload, etc events besides enter world
+function ManaTick:OnEvent()
+    if event == "ADDON_LOADED" then
+        --ManaTick:OnLoad()
+    end
+
+    if event == "PLAYER_ENTERING_WORLD" then
+        --this.lastTickMana = UnitMana("player")
+        --this.lastTickTime = GetTime()
+        lastTickMana = UnitMana("player")
+        lastTickTime = GetTime()
+        expectedTickInterval = defaultInterval
+        isGuess = true
+    end
+    
+    if event == "UNIT_MANA" and arg1 == "player" then
+        local currentMana = UnitMana("player") -- Get the player's current mana
+        local t = GetTime()
+    
+        local manaDiff = currentMana - lastTickMana
+        lastTickMana = currentMana
+        --Making the assumption that losing mana means casting a spell.  
+        --This isn't necessarily true, and can also be caused by:
+        --      -Increasing max mana via gear change or buff while at full mana
+        --      -Mana burn effects
+        --      -Others?
+        if manaDiff < 0 then
+            regenDisabledTime = t + lockoutDuration
+            ManaTick:setTickBarColor(false)
+        end
+        
+        local timeDiff = t - lastTickTime
+        --CHANGE THIS TO IF NOT SET, START SCHEDULING TICKS
+        if isGuess or (timeDiff > defaultInterval - tickVariance) then
+            --print("Time since last change: " .. t - lastTickTime)
+            lastTickTime = t    
+            expectedTickInterval = defaultInterval
+            expectedTickTime = t + expectedTickInterval
+            isGuess = false
+        end
+        
+    end
+end
+
+
+
+function ManaTick:OnUpdate()
+    currentTime = GetTime()
+    
+    if regenDisabledTime ~= nil and regenDisabledTime < currentTime then
+        ManaTick:setTickBarColor(true)
+        regenDisabledTime = nil
+    end
+    
+    --Only apply this if full mana?
+    --if UnitMana("player") / UnitManaMax("player") >= 1 and abs(currentTime - expectedTickTime) < tickVariance then
+    if (currentTime - expectedTickTime > 0) and (currentTime - expectedTickTime > tickVariance) then
+        lastTickTime = currentTime - tickVariance
+        expectedTickTime = expectedTickTime + expectedTickInterval
+        isGuess = true
+    end
+    
+    --pct = (currentTime - lastTickTime) / expectedTickInterval
+    pct = (currentTime - lastTickTime) / (expectedTickTime - lastTickTime)
+    if pct > 1 then
+        pct = 1
+    end
+    if pct < 0 then
+        pct = 0
+    end
+    --duration = expectedTickInterval
+    duration = expectedTickTime - lastTickTime
+    ManaTick.bar:SetMinMaxValues(0,duration)
+    ManaTick.bar:SetValue(pct * duration)
+    --ManaTick.bar.text:SetText(duration .. "s")
+    xpos = pct * ManaTick.bar:GetWidth()
+    ManaTick.bar.spark:SetPoint("CENTER", ManaTick.bar, "LEFT", xpos, 0)
+    
+    _, _, latencyHome, latencyWorld = GetNetStats()  --latencyWorld doesn't seem to exist?
+    drinkPct = (duration - (latencyHome/1000)) / duration
+    xpos = drinkPct * ManaTick.bar:GetWidth()
+    ManaTick.bar.latency:SetPoint("Center", ManaTick.bar, "LEFT", xpos, 0)
+    ManaTick.bar.latency:Show()
+  
+end
+
+
+
+
 
 
 function ManaTick:SetWidth(width)
@@ -86,10 +200,12 @@ function ManaTick:SetWidth(width)
 end
 
 
+
 function ManaTick:SetHeight(height)
     settings.height = height
     ManaTick.bar:SetHeight(settings.height)
 end
+
 
 
 function ManaTick:Show(show)
@@ -103,6 +219,7 @@ function ManaTick:Show(show)
 end
 
 
+
 function ManaTick:Lock(lock)
     if lock then
         settings.lock = true
@@ -112,6 +229,8 @@ function ManaTick:Lock(lock)
         ManaTick.bar:EnableMouse(true)
     end
 end
+
+
 
 function ManaTick:CreateBar()
     ManaTick.bar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
@@ -183,86 +302,7 @@ end
     
 
 
-
-
-
-local manatick = CreateFrame("Frame", nil, UIParent)
-manatick:RegisterEvent("PLAYER_ENTERING_WORLD")
-manatick:RegisterEvent("UNIT_MANA")
-manatick:RegisterEvent("ADDON_LOADED")
---Can't just assume next tick is 5s after spell cast due to set bonus, talents, trinkets
---Any mp5 gear will cause it to tick every 2s regardless
---Blessing of wisdom/buff ticks?
---Mana pots, runes, consumes?
---Latency causing delays
---Tick while casting
---Possible it just pauses current 2s timer, rather than doing on next?
---Need to also do zone, reload, etc events besides enter world
-manatick:SetScript("OnEvent", function()
-    if event == "ADDON_LOADED" then
-        --set settings here
-        --ManaTick.AddonLoaded()
-    end
-
-    if event == "PLAYER_ENTERING_WORLD" then
-        --this.lastTickMana = UnitMana("player")
-        --this.lastTickTime = GetTime()
-        lastTickMana = UnitMana("player")
-        lastTickTime = GetTime()
-        expectedTickInterval = defaultInterval
-        isGuess = true
-    end
-    
-    if event == "UNIT_MANA" and arg1 == "player" then
-        local currentMana = UnitMana("player") -- Get the player's current mana
-        local t = GetTime()
-    
-        local manaDiff = currentMana - lastTickMana
-        lastTickMana = currentMana
-        --Making the assumption that losing mana means casting a spell.  
-        --This isn't necessarily true, and can also be caused by:
-        --      -Increasing max mana via gear change or buff while at full mana
-        --      -Mana burn effects
-        --      -Others?
-        if manaDiff < 0 then
-            --[[
-            expectedTickInterval = lockoutDuration
-            --Find next interval of defaultInterval after t+lockoutDuration
-            --THIS IS A BAD WAY TO DO IT BUT IM SO TIRED
-            --THIS NEEDS A FLOAT MARGIN CHECK
-            while expectedTickTime < t + lockoutDuration do
-                expectedTickTime = expectedTickTime + defaultInterval
-            end
-            return
-            ]]
-            regenDisabledTime = t + lockoutDuration
-            setTickBarColor(false)
-        end
-        
-        local timeDiff = t - lastTickTime
-        --CHANGE THIS TO IF NOT SET, START SCHEDULING TICKS
-        if isGuess or (timeDiff > defaultInterval - tickVariance) then
-            --print("Time since last change: " .. t - lastTickTime)
-            lastTickTime = t    
-            expectedTickInterval = defaultInterval
-            expectedTickTime = t + expectedTickInterval
-            isGuess = false
-        end
-        
-    end
-end)
-
-
-
-function ManaTick:OnLoad()
-
-
-
-end
-
-
-
-function setTickBarColor(regenEnabled)
+function ManaTick:setTickBarColor(regenEnabled)
     if regenEnabled then
         ManaTick.bar:SetBackdropBorderColor(0.0, 0.0, 0.0, .85)
         ManaTick.bar:SetBackdropColor(24/255, 24/255, 24/255, .7)
@@ -273,45 +313,7 @@ function setTickBarColor(regenEnabled)
 end
 
 
-manatick:SetScript("OnUpdate", function()
-    currentTime = GetTime()
-    
-    if regenDisabledTime ~= nil and regenDisabledTime < currentTime then
-        setTickBarColor(true)
-        regenDisabledTime = nil
-    end
-    
-    --Only apply this if full mana?
-    --if UnitMana("player") / UnitManaMax("player") >= 1 and abs(currentTime - expectedTickTime) < tickVariance then
-    if (currentTime - expectedTickTime > 0) and (currentTime - expectedTickTime > tickVariance) then
-        lastTickTime = currentTime - tickVariance
-        expectedTickTime = expectedTickTime + expectedTickInterval
-        isGuess = true
-    end
-    
-    --pct = (currentTime - lastTickTime) / expectedTickInterval
-    pct = (currentTime - lastTickTime) / (expectedTickTime - lastTickTime)
-    if pct > 1 then
-        pct = 1
-    end
-    if pct < 0 then
-        pct = 0
-    end
-    --duration = expectedTickInterval
-    duration = expectedTickTime - lastTickTime
-    ManaTick.bar:SetMinMaxValues(0,duration)
-    ManaTick.bar:SetValue(pct * duration)
-    --ManaTick.bar.text:SetText(duration .. "s")
-    xpos = pct * ManaTick.bar:GetWidth()
-    ManaTick.bar.spark:SetPoint("CENTER", ManaTick.bar, "LEFT", xpos, 0)
-    
-    _, _, latencyHome, latencyWorld = GetNetStats()  --latencyWorld doesn't seem to exist?
-    drinkPct = (duration - (latencyHome/1000)) / duration
-    xpos = drinkPct * ManaTick.bar:GetWidth()
-    ManaTick.bar.latency:SetPoint("Center", ManaTick.bar, "LEFT", xpos, 0)
-    ManaTick.bar.latency:Show()
-   
-end)
+
 
 
 
