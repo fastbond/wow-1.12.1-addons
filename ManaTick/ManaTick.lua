@@ -23,6 +23,8 @@ local default_settings = {
 	["show"] = true,
 	["lock"] = false,
     ["latency"] = true,
+    ["x"] = 0,
+    ["y"] = 0,
 	--["color"] = 1.0,
 }
 ManaTick_Settings = default_settings
@@ -224,6 +226,8 @@ end
 function ManaTick:SetHeight(height)
     ManaTick_Settings.height = height
     ManaTick.bar:SetHeight(ManaTick_Settings.height)
+    ManaTick.bar.spark:SetHeight(ManaTick.bar:GetHeight() * 1.8)
+    ManaTick.bar.latency:SetHeight(max(ManaTick.bar:GetHeight() - 4, 5))
 end
 
 
@@ -323,7 +327,7 @@ function ManaTick:CreateBar()
 
     bar.latency = bar:CreateTexture(nil, 'OVERLAY')
     bar.latency:SetTexture(1, 1, 1, 0.8)
-    bar.latency:SetHeight(manabar_height * 0.8)
+    bar.latency:SetHeight(max(bar:GetHeight() - 4, 5))
     bar.latency:SetWidth(1)
 
     ManaTick.bar = bar
