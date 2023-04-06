@@ -16,7 +16,6 @@ local isGuess = nil
 local latency = nil
 local tickInterval = nil
 
-
 local default_settings = {
 	["width"] = 150,
 	["height"] = 25,
@@ -26,8 +25,7 @@ local default_settings = {
     ["latency"] = true,
 	--["color"] = 1.0,
 }
-local settings = default_settings
-
+ManaTick_Settings = default_settings
 
 SLASH_MANATICK1, SLASH_MANATICK2 = '/manatick', '/mt'; 
 SlashCmdList["MANATICK"] = function(msg)
@@ -55,11 +53,17 @@ SlashCmdList["MANATICK"] = function(msg)
     if cmd == "latency" then
         ManaTick:ShowLatency(not ManaTick.bar.latency:IsShown())
     end
-        
-	
+    
+    if cmd == "reset" then
+        for k, v in pairs(default_settings) do
+            ManaTick_Settings[k] = v
+        end
+        ManaTick:ApplySettings()
+	end
 end
 
 
+--Runs before variables are loaded
 function ManaTick:OnLoad()
     self.scripts = CreateFrame("Frame", nil, UIParent)
     self.scripts:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -67,34 +71,6 @@ function ManaTick:OnLoad()
     self.scripts:RegisterEvent("ADDON_LOADED")
     
     self:CreateBar()
-    
-    --Need to make sure they exist
-	if settings.show then
-		self:Show(true)
-	else
-		self:Show(false)
-	end
-
-    if settings.lock then
-        self:Lock(false)
-    else
-        self:Lock(true)
-    end
-    
-    --Need to check for non-numeric
-    if settings.width ~= nil then
-        self:SetWidth(settings.width)
-    end
-    if settings.height ~= nil then
-        self:SetHeight(settings.height)
-    end
-    
-    if settings.latency then
-		self:ShowLatency(true)
-	else
-		self:ShowLatency(false)
-	end 
-    
     
     self.scripts:SetScript("OnEvent", function()
         self:OnEvent()
@@ -117,8 +93,17 @@ end
 --Possible it just pauses current 2s timer, rather than doing on next?
 --Need to also do zone, reload, etc events besides enter world
 function ManaTick:OnEvent()
-    if event == "ADDON_LOADED" then
-        --ManaTick:OnLoad()
+    --Runs after variables are loaded
+    if event == "ADDON_LOADED" and arg1 == "ManaTick" then
+        if ManaTick_Settings == nil then
+            ManaTick_Settings = {}
+        end
+        for k, v in pairs(default_settings) do
+            if ManaTick_Settings[k] == nil then
+                ManaTick_Settings[k] = v
+            end
+        end
+        ManaTick:ApplySettings()
     end
 
     if event == "PLAYER_ENTERING_WORLD" then
@@ -153,7 +138,6 @@ function ManaTick:OnEvent()
             expectedTickTime = t + expectedTickInterval
             isGuess = false
         end
-        
     end
 end
 
@@ -200,24 +184,55 @@ end
 
 
 
+function ManaTick:ApplySettings()
+    --Need to make sure they exist
+	if ManaTick_Settings.show then
+		self:Show(true)
+	else
+		self:Show(false)
+	end
+
+    if ManaTick_Settings.lock then
+        self:Lock(false)
+    else
+        self:Lock(true)
+    end
+    
+    --Need to check for non-numeric
+    if ManaTick_Settings.width ~= nil then
+        self:SetWidth(ManaTick_Settings.width)
+    end
+    if ManaTick_Settings.height ~= nil then
+        self:SetHeight(ManaTick_Settings.height)
+    end
+    
+    if ManaTick_Settings.latency then
+		self:ShowLatency(true)
+	else
+		self:ShowLatency(false)
+	end 
+end
+
+
+
 function ManaTick:SetWidth(width)
-    settings.width = width
-    ManaTick.bar:SetWidth(settings.width)
+    ManaTick_Settings.width = width
+    ManaTick.bar:SetWidth(ManaTick_Settings.width)
 end
 
 
 function ManaTick:SetHeight(height)
-    settings.height = height
-    ManaTick.bar:SetHeight(settings.height)
+    ManaTick_Settings.height = height
+    ManaTick.bar:SetHeight(ManaTick_Settings.height)
 end
 
 
 function ManaTick:Show(show)
     if show then
-        settings.show = true
+        ManaTick_Settings.show = true
         ManaTick.bar:Show()
     else
-        settings.show = false
+        ManaTick_Settings.show = false
         ManaTick.bar:Hide()
     end
 end
@@ -225,10 +240,10 @@ end
 
 function ManaTick:Lock(lock)
     if lock then
-        settings.lock = true
+        ManaTick_Settings.lock = true
         ManaTick.bar:EnableMouse(false)
     else
-        settings.lock = false
+        ManaTick_Settings.lock = false
         ManaTick.bar:EnableMouse(true)
     end
 end
@@ -236,10 +251,10 @@ end
 
 function ManaTick:ShowLatency(showLatencyBar)
     if showLatencyBar then
-        settings.latency = true
+        ManaTick_Settings.latency = true
         ManaTick.bar.latency:Show()
     else
-        settings.latency = false
+        ManaTick_Settings.latency = false
         ManaTick.bar.latency:Hide()
     end
 end
@@ -250,8 +265,8 @@ function ManaTick:CreateBar()
     bar = CreateFrame("StatusBar", "ManaTickBar", UIParent)
 
     --Set Size
-    bar:SetWidth(settings.width)
-    bar:SetHeight(settings.height)
+    bar:SetWidth(ManaTick_Settings.width)
+    bar:SetHeight(ManaTick_Settings.height)
 
     --Set position relative to base UI(frame anchor corner, target, target anchor corner, xoffset, yoffset)
     bar:ClearAllPoints()
@@ -287,7 +302,7 @@ function ManaTick:CreateBar()
     local manabar_height = bar:GetHeight()
     local manabar_width = bar:GetWidth()
     bar.spark:SetHeight(manabar_height * 1.8)
-    bar.spark:SetWidth(settings.spark_width)
+    bar.spark:SetWidth(ManaTick_Settings.spark_width)
     bar.spark:SetBlendMode('ADD')
 
     --Default Values

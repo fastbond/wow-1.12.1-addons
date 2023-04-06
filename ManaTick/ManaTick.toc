@@ -2,7 +2,7 @@
 ## Title: ManaTick
 ## Author: Fastbond
 ## Notes: Tracks mana regen ticks for drink walking etc
-## SavedVariables: ManaTick.settings
+## SavedVariables: ManaTick_Settings
 ManaTick.lua
 ManaTick.xml
 
