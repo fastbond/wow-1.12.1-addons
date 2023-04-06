@@ -37,6 +37,22 @@ Commands
 * ```/im hide``` - hide window
 * ```/im show``` - show window
 
+## ManaTick
+Tracks mana regeneration ticks and displays the estimated time to next tick as a sliding bar.  
+
+Also attempts to predict the best time to perform tick-related actions based on your latency, shown as a white line.
+
+#### Commands
+* /manatick or /mt - display help message
+* /mt hide - hide bar
+* /mt show - show bar
+* /mt lock - lock bar and disable mouse interaction
+* /mt unlock - unlock bar for dragging
+* /mt width number - set bar width to number
+* /mt height numbr - set bar height to number
+* /mt latency - toggle latency bar
+* /mt reset - reset settings to defaults
+
 ## FFat20
 Tracks and displays the player's Faerie Fire duration on each target.  Not guranteed to be completely accurate due to limitations of the 1.12.1 client.
 
