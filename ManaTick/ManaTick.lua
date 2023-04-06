@@ -23,6 +23,7 @@ local default_settings = {
     ["spark_width"] = 20,
 	["show"] = true,
 	["lock"] = true,
+    ["latency"] = true,
 	--["color"] = 1.0,
 }
 local settings = default_settings
@@ -50,10 +51,13 @@ SlashCmdList["MANATICK"] = function(msg)
     elseif cmd == "height" then
         ManaTick:SetHeight(text)
     end
+    
+    if cmd == "latency" then
+        ManaTick:ShowLatency(not ManaTick.bar.latency:IsShown())
+    end
+        
 	
 end
-
-
 
 
 function ManaTick:OnLoad()
@@ -84,6 +88,12 @@ function ManaTick:OnLoad()
     if settings.height ~= nil then
         ManaTick:SetHeight(settings.height)
     end
+    
+    if settings.latency then
+		ManaTick:ShowLatency(true)
+	else
+		ManaTick:ShowLatency(false)
+	end 
     
     
     ManaTick.scripts:SetScript("OnEvent", function()
@@ -118,17 +128,17 @@ function ManaTick:OnEvent()
         isGuess = true
     end
     
+    --Making the assumption that losing mana means casting a spell.  
+    --This isn't necessarily true, and can also be caused by:
+    --      -Increasing max mana via gear change or buff while at full mana
+    --      -Mana burn effects
+    --      -Others?
     if event == "UNIT_MANA" and arg1 == "player" then
         local currentMana = UnitMana("player") -- Get the player's current mana
         local t = GetTime()
     
         local manaDiff = currentMana - lastTickMana
         lastTickMana = currentMana
-        --Making the assumption that losing mana means casting a spell.  
-        --This isn't necessarily true, and can also be caused by:
-        --      -Increasing max mana via gear change or buff while at full mana
-        --      -Mana burn effects
-        --      -Others?
         if manaDiff < 0 then
             regenDisabledTime = t + lockoutDuration
             ManaTick:setTickBarColor(false)
@@ -185,12 +195,8 @@ function ManaTick:OnUpdate()
     drinkPct = (duration - (latencyHome/1000)) / duration
     xpos = drinkPct * ManaTick.bar:GetWidth()
     ManaTick.bar.latency:SetPoint("Center", ManaTick.bar, "LEFT", xpos, 0)
-    ManaTick.bar.latency:Show()
   
 end
-
-
-
 
 
 
@@ -200,12 +206,10 @@ function ManaTick:SetWidth(width)
 end
 
 
-
 function ManaTick:SetHeight(height)
     settings.height = height
     ManaTick.bar:SetHeight(settings.height)
 end
-
 
 
 function ManaTick:Show(show)
@@ -219,7 +223,6 @@ function ManaTick:Show(show)
 end
 
 
-
 function ManaTick:Lock(lock)
     if lock then
         settings.lock = true
@@ -227,6 +230,17 @@ function ManaTick:Lock(lock)
     else
         settings.lock = false
         ManaTick.bar:EnableMouse(true)
+    end
+end
+
+
+function ManaTick:ShowLatency(showLatencyBar)
+    if showLatencyBar then
+        settings.latency = true
+        ManaTick.bar.latency:Show()
+    else
+        settings.latency = false
+        ManaTick.bar.latency:Hide()
     end
 end
 
