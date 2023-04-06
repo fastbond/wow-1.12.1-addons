@@ -21,7 +21,7 @@ local default_settings = {
 	["height"] = 25,
     ["spark_width"] = 20,
 	["show"] = true,
-	["lock"] = true,
+	["lock"] = false,
     ["latency"] = true,
 	--["color"] = 1.0,
 }
@@ -193,9 +193,9 @@ function ManaTick:ApplySettings()
 	end
 
     if ManaTick_Settings.lock then
-        self:Lock(false)
-    else
         self:Lock(true)
+    else
+        self:Lock(false)
     end
     
     --Need to check for non-numeric
