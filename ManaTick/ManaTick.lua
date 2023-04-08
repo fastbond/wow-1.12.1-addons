@@ -39,7 +39,32 @@ SlashCmdList["MANATICK"] = function(msg)
 	local msg = string.lower(msg)
 	local _,_,cmd, text = string.find(msg,"([^%s]+) ?(.*)")
     
-    if cmd == "help" or cmd == "" or cmd == nil then
+	if cmd == "show" then
+		ManaTick:Show(true)
+	elseif cmd == "hide" then
+		ManaTick:Show(false)
+    
+    elseif cmd == "lock" then
+        ManaTick:Lock(true)
+    elseif cmd == "unlock" then
+        ManaTick:Lock(false)
+    
+    elseif cmd == "width" then
+        ManaTick:SetWidth(tonumber(text))
+    elseif cmd == "height" then
+        ManaTick:SetHeight(tonumber(text))
+    
+    elseif cmd == "latency" then
+        ManaTick:ShowLatency(not ManaTick.bar.latency:IsShown())
+        
+    elseif cmd == "reset" then
+        for k, v in pairs(default_settings) do
+            settings[k] = v
+        end
+        ManaTick:ApplySettings()
+    
+    --if cmd == "help" or cmd == "" or cmd == nil then
+    else
         DEFAULT_CHAT_FRAME:AddMessage("ManaTick commands: ")	
         DEFAULT_CHAT_FRAME:AddMessage(" /mt show - Show bar")	
         DEFAULT_CHAT_FRAME:AddMessage(" /mt hide - Hide bar")	
@@ -50,35 +75,6 @@ SlashCmdList["MANATICK"] = function(msg)
         DEFAULT_CHAT_FRAME:AddMessage(" /mt latency - Toggle latency bar")	
         DEFAULT_CHAT_FRAME:AddMessage(" /mt reset - reset settings to defaults")
     end
-	
-	if cmd == "show" then
-		ManaTick.bar:Show()
-	elseif cmd == "hide" then
-		ManaTick.bar:Hide()
-	end
-    
-    if cmd == "lock" then
-        ManaTick.bar:EnableMouse(false)
-    elseif cmd == "unlock" then
-        ManaTick.bar:EnableMouse(true)
-    end
-    
-    if cmd == "width" then
-        ManaTick:SetWidth(tonumber(text))
-    elseif cmd == "height" then
-        ManaTick:SetHeight(tonumber(text))
-    end
-    
-    if cmd == "latency" then
-        ManaTick:ShowLatency(not ManaTick.bar.latency:IsShown())
-    end
-    
-    if cmd == "reset" then
-        for k, v in pairs(default_settings) do
-            settings[k] = v
-        end
-        ManaTick:ApplySettings()
-	end
 end
 
 
